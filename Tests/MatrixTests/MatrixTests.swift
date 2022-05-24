@@ -31,7 +31,7 @@ final class MatrixTests: XCTestCase {
     
     func testSetData() throws {
         let myMatrix = Matrix(rows: 3, columns: 3)
-        myMatrix.setData(args: 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
+        try myMatrix.setData(args: 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
         
         let data: [[Double]] = [
             [1,2,3],
@@ -44,7 +44,7 @@ final class MatrixTests: XCTestCase {
     
     func testSetIdentiy() throws {
         let myMatrix = Matrix(rows: 3, columns: 3)
-        myMatrix.setIdentity()
+        try myMatrix.setIdentity()
         
         let data: [[Double]] = [
             [1,0,0],
@@ -58,7 +58,7 @@ final class MatrixTests: XCTestCase {
     func testMatrixAddition() throws {
         XCTAssertTrue(
             
-            (matrixA + matrixA).data
+            (try matrixA + matrixA).data
             ==
             [
                 [2,4,6],
@@ -68,7 +68,7 @@ final class MatrixTests: XCTestCase {
         )
         
         XCTAssertTrue(
-            (matrixA + matrixB).data
+            (try matrixA + matrixB).data
             ==
             [
                 [10,10,10],
@@ -80,7 +80,7 @@ final class MatrixTests: XCTestCase {
     
     func testMatrixMultiplication() throws {
         XCTAssertTrue(
-            (matrixA * matrixA).data ==
+            (try matrixA * matrixA).data ==
             [
                 [30,36,42],
                 [66,81,96],
@@ -89,7 +89,7 @@ final class MatrixTests: XCTestCase {
         )
         
         XCTAssertTrue(
-            (matrixA * matrixB).data
+            (try matrixA * matrixB).data
             ==
             [
                 [78,72,66],
@@ -117,7 +117,7 @@ final class MatrixTests: XCTestCase {
     func testMatrixMultiplicationTranspose() throws {
         
         XCTAssertTrue(
-            matrixA.multiplyByTranspose(with: matrixA).data
+            try matrixA.multiplyByTranspose(with: matrixA).data
             ==
             [
                 [14,32,50],
@@ -127,7 +127,7 @@ final class MatrixTests: XCTestCase {
         )
         
         XCTAssertTrue(
-            matrixA.multiplyByTranspose(with: matrixB).data
+            try matrixA.multiplyByTranspose(with: matrixB).data
             ==
             [
                 [46,64,82],
@@ -171,7 +171,7 @@ final class MatrixTests: XCTestCase {
     
     func testMatrixSwapRows() throws {
         let matrixA = matrixA
-        matrixA.swapRows(0, 2)
+        try matrixA.swapRows(0, 2)
         XCTAssertTrue(
             matrixA.data
             ==
@@ -182,7 +182,7 @@ final class MatrixTests: XCTestCase {
             ]
         )
         
-        matrixA.swapRows(0, 2)
+        try matrixA.swapRows(0, 2)
         XCTAssertTrue(matrixA.data == self.matrixA.data)
     }
     
@@ -202,7 +202,7 @@ final class MatrixTests: XCTestCase {
     
     func testMatrixShearRows() throws {
         let matrixA = matrixA
-        matrixA.shearRow(0, 1, scalar: 10)
+        try matrixA.shearRow(0, 1, scalar: 10)
         
         XCTAssertTrue(matrixA.data ==
         [
@@ -224,17 +224,16 @@ final class MatrixTests: XCTestCase {
             return matrix
         }()
         
-        if let result = matrixWithDeterminante.destructiveInvert() {
-            result.round()
-            
-            
-            XCTAssertTrue(result.data ==
-            [
-                [0,-1,-1],
-                [1,3,3],
-                [3,9,10]
-            ]
-            )
-        }
+        let result = try matrixWithDeterminante.destructiveInvert()
+        result.round()
+        
+        
+        XCTAssertTrue(result.data ==
+                      [
+                        [0,-1,-1],
+                        [1,3,3],
+                        [3,9,10]
+                      ]
+        )
     }
 }

@@ -12,42 +12,36 @@ open class Vector: Matrix {
         super.init(rows: rows, columns: 1)
     }
     
-    public static func +(left: Vector, right: Vector) -> Vector {
-        guard left.rows == right.rows else { fatalError() }
+    public static func +(left: Vector, right: Vector) throws -> Vector {
+        guard left.rows == right.rows else { throw MatrixError.wrongDimensions }
         
         let resultVector = Vector(rows: left.rows)
         
-        for row in 0..<left.rows {
-            for column in 0..<left.columns {
-                let sum = left.data[row][column] + right.data[row][column]
-                resultVector.updateValue(row: row, column: column, value: sum)
-            }
+        for row in left.rowRange {
+            let sum = left.data[row][0] + right.data[row][0]
+            resultVector.updateValue(row: row, column: 0, value: sum)
         }
         return resultVector
     }
     
-    public static func -(left: Vector, right: Vector) -> Vector {
-        guard left.rows == right.rows else { fatalError() }
+    public static func -(left: Vector, right: Vector) throws -> Vector {
+        guard left.rows == right.rows else { throw MatrixError.wrongDimensions }
         
         let resultVector = Vector(rows: left.rows)
         
-        for row in 0..<left.rows {
-            for column in 0..<left.columns {
-                let sum = left.data[row][column] - right.data[row][column]
-                resultVector.updateValue(row: row, column: column, value: sum)
-            }
+        for row in left.rowRange {
+            let sum = left.data[row][0] - right.data[row][0]
+            resultVector.updateValue(row: row, column: 0, value: sum)
         }
         
         return resultVector
     }
     
     public func copy() -> Vector {
-        let destinationVector = Vector(rows: rows)
+        let destinationVector = Vector(rows: self.rows)
         
-        for row in 0..<self.rows {
-            for column in 0..<self.columns {
-                destinationVector.updateValue(row: row, column: column, value: self.data[row][column])
-            }
+        for row in self.rowRange {
+            destinationVector.updateValue(row: row, column: 0, value: self.data[row][0])
         }
         return destinationVector
     }
