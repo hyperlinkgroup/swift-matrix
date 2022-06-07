@@ -12,6 +12,10 @@ open class Vector: Matrix {
         super.init(rows: rows, columns: 1)
     }
     
+    public init(matrix: Matrix) {
+        super.init(rows: matrix.rows, columns: 1, data: matrix.data.flatMap { $0 } )
+    }
+    
     public static func +(left: Vector, right: Vector) throws -> Vector {
         guard left.rows == right.rows else { throw MatrixError.wrongDimensions }
         
