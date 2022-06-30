@@ -16,8 +16,12 @@ open class Vector: Matrix {
         super.init(rows: matrix.rows, columns: 1, data: matrix.data.flatMap { $0 } )
     }
     
+    public static func *(left: Vector, right: Vector) throws -> Vector {
+        throw MatrixError.unimplemented(method: #function)
+    }
+    
     public static func +(left: Vector, right: Vector) throws -> Vector {
-        guard left.rows == right.rows else { throw MatrixError.wrongDimensions }
+        guard left.rows == right.rows else { throw MatrixError.wrongDimensions(needed: left.rows, got: right.rows) }
         
         let resultVector = Vector(rows: left.rows)
         
@@ -29,7 +33,7 @@ open class Vector: Matrix {
     }
     
     public static func -(left: Vector, right: Vector) throws -> Vector {
-        guard left.rows == right.rows else { throw MatrixError.wrongDimensions }
+        guard left.rows == right.rows else { throw MatrixError.wrongDimensions(needed: left.rows, got: right.rows) }
         
         let resultVector = Vector(rows: left.rows)
         

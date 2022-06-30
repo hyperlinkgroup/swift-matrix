@@ -21,7 +21,6 @@ open class Matrix {
         self.rows = rows
         self.columns = columns
         
-        
         do {
             if let data = data {
                 try setData(data)
@@ -36,11 +35,10 @@ open class Matrix {
                 }
             }
         }
-        
     }
     
     public func setData(_ args: [Double]) throws {
-        guard args.count == rows * columns else { throw MatrixError.wrongDimensions }
+        guard args.count == rows * columns else { throw MatrixError.inputMising(needed: rows * columns, got: args.count) }
         
         for row in 0..<rows {
             for column in 0..<columns {
@@ -65,7 +63,7 @@ open class Matrix {
     
     
     public func setIdentity() throws {
-        guard rows == columns else { throw MatrixError.wrongDimensions }
+        guard rows == columns else { throw MatrixError.notSquarish }
         
         for row in 0..<rows {
             for column in 0..<columns {
@@ -131,7 +129,8 @@ open class Matrix {
         guard
             left.rows == right.rows,
             left.columns == right.columns else {
-            throw MatrixError.wrongDimensions
+            let numberOfRowsAreInequal = left.rows == right.rows
+            throw MatrixError.wrongDimensions(needed: numberOfRowsAreInequal ? left.rows : left.columns, got: numberOfRowsAreInequal ? right.rows : right.columns)
         }
         
         let resultMatrix = Matrix(rows: left.rows, columns: left.columns)
@@ -160,29 +159,38 @@ open class Matrix {
     
     
     public static func *(left: Matrix, right: Matrix) throws -> Matrix {
-        guard left.columns == right.rows else { throw MatrixError.wrongDimensions }
-        
-        let resultMatrix = Matrix(rows: left.rows, columns: right.columns)
-        
-        let rows = resultMatrix.rows
-        let columns = resultMatrix.columns
-        
-        for row in 0..<rows {
-            for column in 0..<columns {
-                resultMatrix.updateValue(row: row, column: column, value: 0)
-                
-                for rowColumn in left.columnRange{
-                    let value = resultMatrix.data[row][column] + left.data[row][rowColumn] * right.data[rowColumn][column]
-                    resultMatrix.updateValue(row: row, column: column, value: value)
+        if let left = left as? Vector {
+            return try mul(matrix: right, vector: left)
+        } else if let right = right as? Vector {
+            return try mul(matrix: left, vector: right)
+        } else {
+            
+            guard left.columns == right.rows else {
+                throw MatrixError.wrongDimensions(needed: left.columns, got: right.rows)
+            }
+            
+            let resultMatrix = Matrix(rows: left.rows, columns: right.columns)
+            
+            for row in resultMatrix.rowRange {
+                for column in resultMatrix.columnRange {
+                    resultMatrix.updateValue(row: row, column: column, value: 0)
+                    
+                    for rowColumn in left.columnRange{
+                        let value = resultMatrix.data[row][column] + left.data[row][rowColumn] * right.data[rowColumn][column]
+                        resultMatrix.updateValue(row: row, column: column, value: value)
+                    }
                 }
             }
+            return resultMatrix
         }
-        return resultMatrix
     }
     
     
-    public static func *(matrix: Matrix, vector: Vector) throws -> Vector {
-        guard matrix.columns == vector.rows else { throw MatrixError.wrongDimensions }
+    public static func mul(matrix: Matrix, vector: Vector) throws -> Vector {
+        
+        guard matrix.columns == vector.rows else {
+            throw MatrixError.wrongDimensions(needed: matrix.columns, got: vector.rows)
+        }
         
         let resultVector = Vector(rows: matrix.rows)
         
@@ -204,7 +212,7 @@ open class Matrix {
     
     
     public func multiplyByTranspose(with secondMatrix: Matrix) throws -> Matrix {
-        guard self.columns == secondMatrix.columns else { throw MatrixError.wrongDimensions }
+        guard self.columns == secondMatrix.columns else { throw MatrixError.wrongDimensions(needed: self.columns, got: secondMatrix.columns) }
         
         let resultMatrix = Matrix(rows: self.rows, columns: secondMatrix.rows)
         
@@ -260,8 +268,9 @@ open class Matrix {
         
         guard rowRange.contains(row1),
               rowRange.contains(row2) else {
-                  throw MatrixError.wrongDimensions
-              }
+            let row1Invalid = !rowRange.contains(row1)
+            throw MatrixError.indexNotExisting(index: row1Invalid ? row1 : row2, count: rows)
+        }
         
         let tmp = data[row1]
         data[row1] = data[row2]
@@ -284,8 +293,9 @@ open class Matrix {
         
         guard rowRange.contains(row1),
               rowRange.contains(row2) else {
-                  throw MatrixError.wrongDimensions
-              }
+            let row1Invalid = !rowRange.contains(row1)
+            throw MatrixError.indexNotExisting(index: row1Invalid ? row1 : row2, count: rows)
+        }
         
         for column in 0..<columns {
             updateValue(row: row1, column: column, value: data[row1][column] + data[row2][column] * scalar)
@@ -295,7 +305,7 @@ open class Matrix {
     
     
     public func destructiveInvert() throws -> Matrix {
-        guard self.columns == self.rows else { throw MatrixError.wrongDimensions }
+        guard self.columns == self.rows else { throw MatrixError.wrongDimensions(needed: self.columns, got: self.rows) }
         
         let outputMatrix = Matrix(rows: columns, columns: rows)
         
