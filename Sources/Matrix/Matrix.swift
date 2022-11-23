@@ -129,7 +129,7 @@ open class Matrix {
         guard
             left.rows == right.rows,
             left.columns == right.columns else {
-            let numberOfRowsAreInequal = left.rows == right.rows
+            let numberOfRowsAreInequal = left.rows != right.rows
             throw MatrixError.wrongDimensions(needed: numberOfRowsAreInequal ? left.rows : left.columns, got: numberOfRowsAreInequal ? right.rows : right.columns)
         }
         
